@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyOS Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+--bg:#060609;--bg1:#0d0d14;--bg2:#12121c;--bg3:#1a1a28;--bg4:#222234;
+--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);--border3:rgba(255,255,255,0.2);
+--text:#f0f0f8;--text2:#8888aa;--text3:#55556a;
+--accent:#6c63ff;--accent2:#ff6b9d;--accent3:#00d4aa;
+--gold:#f5a623;--red:#ff4757;--blue:#4da6ff;
+--jee:#6c63ff;--neet:#00d4aa;--other:#f5a623;
+--glow:rgba(108,99,255,0.15);
+--sans:'Instrument Sans',sans-serif;
+--display:'Syne',sans-serif;
+--mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;cursor:default;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px;}
+
+/* ANIMATED BG */
+.bg-mesh{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.bg-mesh::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+background:radial-gradient(ellipse at 20% 20%,rgba(108,99,255,0.08) 0%,transparent 50%),
+radial-gradient(ellipse at 80% 80%,rgba(0,212,170,0.06) 0%,transparent 50%),
+radial-gradient(ellipse at 50% 10%,rgba(255,107,157,0.04) 0%,transparent 40%);
+animation:meshMove 20s ease-in-out infinite alternate;}
+@keyframes meshMove{0%{transform:translate(0,0) rotate(0deg);}100%{transform:translate(2%,2%) rotate(1deg);}}
+.grid-overlay{position:fixed;inset:0;z-index:0;pointer-events:none;
+background-image:linear-gradient(rgba(255,255,255,0.015) 1px,transparent 1px),
+linear-gradient(90deg,rgba(255,255,255,0.015) 1px,transparent 1px);
+background-size:40px 40px;}
+
+/* SCREENS */
+.screen{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;
+align-items:center;justify-content:center;transition:opacity .5s,transform .5s;}
+.screen.hidden{opacity:0;pointer-events:none;transform:translateY(20px);}
+
+/* ═══ ONBOARDING ═══ */
+#screen-onboard{padding:24px;}
+.ob-logo{font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.3em;
+color:var(--text3);text-transform:uppercase;margin-bottom:60px;
+animation:fadeUp .8s ease both;}
+.ob-headline{font-family:var(--display);font-size:clamp(32px,6vw,64px);font-weight:800;
+text-align:center;line-height:1.05;margin-bottom:20px;
+animation:fadeUp .8s .1s ease both;}
+.ob-headline span{background:linear-gradient(135deg,var(--accent),var(--accent2));
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.ob-sub{font-size:15px;color:var(--text2);text-align:center;margin-bottom:60px;
+animation:fadeUp .8s .2s ease both;max-width:400px;line-height:1.6;}
+.ob-step{font-size:11px;color:var(--text3);font-family:var(--mono);letter-spacing:.1em;
+margin-bottom:20px;animation:fadeUp .8s .3s ease both;}
+.ob-form{width:100%;max-width:360px;animation:fadeUp .8s .35s ease both;}
+.ob-inp{width:100%;padding:14px 18px;background:var(--bg2);border:1px solid var(--border2);
+border-radius:12px;font-size:14px;color:var(--text);font-family:var(--sans);
+outline:none;transition:all .2s;margin-bottom:10px;}
+.ob-inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,.1);}
+.ob-inp::placeholder{color:var(--text3);}
+.ob-btn{width:100%;padding:14px;background:var(--accent);border:none;border-radius:12px;
+font-size:14px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--display);
+letter-spacing:.03em;transition:all .2s;margin-top:4px;}
+.ob-btn:hover{background:#7c74ff;transform:translateY(-1px);box-shadow:0 8px 24px rgba(108,99,255,.3);}
+.ob-btn:active{transform:translateY(0);}
+.ob-err{font-size:12px;color:var(--red);margin-bottom:8px;display:none;}
+.ob-switch{text-align:center;margin-top:14px;font-size:12px;color:var(--text3);}
+.ob-switch span{color:var(--accent);cursor:pointer;}
+
+/* EXAM SELECT */
+#screen-exam{padding:24px;}
+.ex-back{position:absolute;top:24px;left:24px;font-size:12px;color:var(--text3);
+cursor:pointer;display:flex;align-items:center;gap:6px;transition:color .2s;}
+.ex-back:hover{color:var(--text);}
+.ex-headline{font-family:var(--display);font-size:clamp(24px,4vw,40px);font-weight:800;
+text-align:center;margin-bottom:10px;animation:fadeUp .6s ease both;}
+.ex-sub{font-size:13px;color:var(--text2);text-align:center;margin-bottom:48px;
+animation:fadeUp .6s .1s ease both;}
+.exam-cards{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;
+animation:fadeUp .6s .2s ease both;max-width:860px;}
+.exam-card{width:240px;padding:28px 24px;background:var(--bg1);border:1px solid var(--border2);
+border-radius:20px;cursor:pointer;transition:all .3s;text-align:center;position:relative;overflow:hidden;}
+.exam-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .3s;border-radius:20px;}
+.exam-card:hover{transform:translateY(-4px);}
+.exam-card:hover::before{opacity:1;}
+.exam-card.jee::before{background:radial-gradient(ellipse at 50% 0%,rgba(108,99,255,.15),transparent 70%);}
+.exam-card.neet::before{background:radial-gradient(ellipse at 50% 0%,rgba(0,212,170,.15),transparent 70%);}
+.exam-card.boards::before{background:radial-gradient(ellipse at 50% 0%,rgba(245,166,35,.15),transparent 70%);}
+.exam-card.other::before{background:radial-gradient(ellipse at 50% 0%,rgba(77,166,255,.15),transparent 70%);}
+.exam-card:hover.jee{border-color:var(--jee);box-shadow:0 0 32px rgba(108,99,255,.2);}
+.exam-card:hover.neet{border-color:var(--neet);box-shadow:0 0 32px rgba(0,212,170,.2);}
+.exam-card:hover.boards{border-color:var(--gold);box-shadow:0 0 32px rgba(245,166,35,.2);}
+.exam-card:hover.other{border-color:var(--blue);box-shadow:0 0 32px rgba(77,166,255,.2);}
+.ec-icon{font-size:40px;margin-bottom:14px;display:block;}
+.ec-name{font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:6px;}
+.ec-desc{font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:16px;}
+.ec-tag{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-family:var(--mono);
+padding:3px 10px;border-radius:99px;font-weight:500;}
+.jee .ec-tag{background:rgba(108,99,255,.15);color:var(--jee);}
+.neet .ec-tag{background:rgba(0,212,170,.15);color:var(--neet);}
+.boards .ec-tag{background:rgba(245,166,35,.15);color:var(--gold);}
+.other .ec-tag{background:rgba(77,166,255,.15);color:var(--blue);}
+
+/* ═══ MAIN APP ═══ */
+#screen-app{flex-direction:row;align-items:stretch;justify-content:flex-start;padding:0;}
+
+/* SIDEBAR */
+.sidebar{width:64px;min-height:100vh;background:var(--bg1);border-right:1px solid var(--border);
+display:flex;flex-direction:column;align-items:center;padding:20px 0;
+transition:width .3s cubic-bezier(.4,0,.2,1);z-index:20;flex-shrink:0;}
+.sidebar.expanded{width:220px;}
+.sb-logo{font-family:var(--display);font-size:16px;font-weight:800;color:var(--accent);
+white-space:nowrap;overflow:hidden;transition:all .3s;margin-bottom:32px;
+display:flex;align-items:center;gap:10px;padding:0 12px;}
+.sb-logo .icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+border-radius:10px;display:flex;align-items:center;justify-content:center;
+font-size:16px;flex-shrink:0;}
+.sb-logo .wordmark{opacity:0;transition:opacity .2s .1s;font-size:14px;letter-spacing:-.01em;}
+.sidebar.expanded .sb-logo .wordmark{opacity:1;}
+.sb-user{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;
+justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;
+margin-bottom:24px;cursor:pointer;position:relative;}
+.sb-user-info{opacity:0;transition:opacity .2s .1s;white-space:nowrap;overflow:hidden;}
+.sidebar.expanded .sb-user-info{opacity:1;}
+.sb-user-wrap{display:flex;align-items:center;gap:10px;padding:0 14px;margin-bottom:24px;
+width:100%;overflow:hidden;}
+.sb-uname{font-size:12px;font-weight:600;color:var(--text);}
+.sb-exam-badge{font-size:9px;font-family:var(--mono);padding:2px 6px;border-radius:4px;margin-top:2px;display:inline-block;}
+.nav-section{width:100%;padding:0 8px;margin-bottom:4px;}
+.nav-label{font-size:9px;font-family:var(--mono);color:var(--text3);letter-spacing:.1em;
+text-transform:uppercase;padding:0 8px;margin-bottom:4px;white-space:nowrap;overflow:hidden;
+opacity:0;transition:opacity .2s;}
+.sidebar.expanded .nav-label{opacity:1;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;
+cursor:pointer;transition:all .15s;width:100%;overflow:hidden;position:relative;
+text-decoration:none;margin-bottom:1px;}
+.nav-item .ni-icon{width:20px;height:20px;display:flex;align-items:center;justify-content:center;
+font-size:16px;flex-shrink:0;}
+.nav-item .ni-label{font-size:13px;font-weight:500;white-space:nowrap;opacity:0;
+transition:opacity .15s .05s;color:var(--text2);}
+.sidebar.expanded .nav-item .ni-label{opacity:1;}
+.nav-item:hover{background:var(--bg3);}
+.nav-item:hover .ni-label{color:var(--text);}
+.nav-item.active{background:rgba(108,99,255,.12);}
+.nav-item.active .ni-label{color:var(--accent);}
+.nav-item.active .ni-icon{filter:drop-shadow(0 0 6px var(--accent));}
+.sb-toggle{margin-top:auto;padding:8px 12px;border-radius:10px;cursor:pointer;
+transition:all .15s;display:flex;align-items:center;gap:12px;width:100%;overflow:hidden;}
+.sb-toggle:hover{background:var(--bg3);}
+.sb-toggle .ni-icon{width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.sb-toggle .ni-label{font-size:12px;color:var(--text3);white-space:nowrap;opacity:0;transition:opacity .15s .05s;}
+.sidebar.expanded .sb-toggle .ni-label{opacity:1;}
+.sb-toggle:hover .ni-label{color:var(--text2);}
+.streak-chip{position:absolute;right:8px;top:50%;transform:translateY(-50%);
+font-size:9px;font-family:var(--mono);background:rgba(245,166,35,.2);
+color:var(--gold);padding:2px 6px;border-radius:99px;white-space:nowrap;}
+
+/* MAIN CONTENT */
+.main{flex:1;min-height:100vh;overflow-y:auto;display:flex;flex-direction:column;}
+.page{display:none;padding:28px 32px;animation:fadeIn .3s ease;flex:1;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+.page-title{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.02em;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.tb-chip{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:99px;
+font-size:12px;font-family:var(--mono);background:var(--bg2);border:1px solid var(--border2);
+color:var(--text2);}
+
+/* STAT CARDS */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px;}
+.stat-card{background:var(--bg1);border:1px solid var(--border);border-radius:16px;
+padding:20px;position:relative;overflow:hidden;transition:all .2s;}
+.stat-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+.sc-glow{position:absolute;top:-30px;right:-30px;width:100px;height:100px;
+border-radius:50%;opacity:.15;pointer-events:none;}
+.sc-label{font-size:11px;color:var(--text3);font-family:var(--mono);letter-spacing:.05em;
+text-transform:uppercase;margin-bottom:8px;}
+.sc-val{font-family:var(--display);font-size:32px;font-weight:800;line-height:1;margin-bottom:4px;}
+.sc-sub{font-size:11px;color:var(--text3);}
+.sc-trend{display:inline-flex;align-items:center;gap:3px;font-size:10px;
+padding:2px 7px;border-radius:99px;margin-top:4px;}
+.sc-trend.up{background:rgba(0,212,170,.12);color:var(--accent3);}
+.sc-trend.down{background:rgba(255,71,87,.12);color:var(--red);}
+
+/* CARDS */
+.card{background:var(--bg1);border:1px solid var(--border);border-radius:16px;
+padding:20px;margin-bottom:14px;}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.card-title{font-family:var(--display);font-size:14px;font-weight:700;color:var(--text2);
+text-transform:uppercase;letter-spacing:.05em;}
+
+/* PROGRESS */
+.prog-bar{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin:6px 0;}
+.prog-fill{height:100%;border-radius:2px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+
+/* CHECKLIST */
+.check-section{font-size:10px;font-family:var(--mono);color:var(--text3);
+letter-spacing:.08em;text-transform:uppercase;margin:14px 0 6px;}
+.ci{display:flex;align-items:flex-start;gap:12px;padding:10px 0;
+border-bottom:1px solid var(--border);cursor:pointer;user-select:none;
+transition:opacity .15s;group:true;}
+.ci:last-child{border-bottom:none;}
+.ci:hover{opacity:.85;}
+.cb{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--bg4);
+flex-shrink:0;display:flex;align-items:center;justify-content:center;
+margin-top:1px;transition:all .2s;}
+.cb.done{background:var(--accent3);border-color:var(--accent3);}
+.cl{font-size:13px;color:var(--text);flex:1;line-height:1.4;}
+.cl.done{color:var(--text3);text-decoration:line-through;}
+.ct{font-size:10px;color:var(--text3);font-family:var(--mono);flex-shrink:0;margin-top:2px;}
+.badge{display:inline-block;font-size:9px;padding:2px 7px;border-radius:99px;
+font-weight:600;margin-top:3px;font-family:var(--mono);}
+.bj{background:rgba(108,99,255,.15);color:var(--jee);}
+.bn{background:rgba(0,212,170,.15);color:var(--neet);}
+.bg2c{background:rgba(245,166,35,.15);color:var(--gold);}
+.bb{background:rgba(77,166,255,.15);color:var(--blue);}
+.bx{background:rgba(255,71,87,.15);color:var(--red);}
+
+/* PROG HEADER */
+.prog-wrap{margin-bottom:16px;}
+.prog-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.prog-lbl{font-size:12px;color:var(--text2);}
+.prog-pct{font-size:12px;font-family:var(--mono);color:var(--accent);}
+
+/* TIMER */
+.timer-display{font-family:var(--display);font-size:72px;font-weight:800;text-align:center;
+letter-spacing:-.04em;line-height:1;padding:24px 0;
+background:linear-gradient(135deg,var(--text),var(--text2));
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.timer-running .timer-display{background:linear-gradient(135deg,var(--accent),var(--accent2));
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.timer-subject{text-align:center;font-size:12px;color:var(--text3);font-family:var(--mono);
+letter-spacing:.08em;text-transform:uppercase;margin-bottom:20px;}
+.subj-tabs{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:20px;}
+.stab{padding:6px 14px;border-radius:99px;border:1px solid var(--border2);font-size:11px;
+cursor:pointer;background:transparent;color:var(--text2);transition:all .2s;font-family:var(--sans);}
+.stab:hover{border-color:var(--border3);color:var(--text);}
+.stab.act-jee{background:rgba(108,99,255,.15);color:var(--jee);border-color:rgba(108,99,255,.3);}
+.stab.act-neet{background:rgba(0,212,170,.15);color:var(--neet);border-color:rgba(0,212,170,.3);}
+.stab.act-g{background:rgba(77,166,255,.15);color:var(--blue);border-color:rgba(77,166,255,.3);}
+.timer-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.tbtn{padding:10px 20px;border-radius:12px;border:1px solid var(--border2);font-size:13px;
+cursor:pointer;background:transparent;color:var(--text);transition:all .2s;font-family:var(--sans);}
+.tbtn:hover{background:var(--bg3);border-color:var(--border3);}
+.tbtn.primary{background:var(--accent);border-color:var(--accent);font-weight:600;}
+.tbtn.primary:hover{background:#7c74ff;box-shadow:0 6px 20px rgba(108,99,255,.3);}
+.tbtn.danger{border-color:rgba(255,71,87,.3);color:var(--red);}
+.tbtn.danger:hover{background:rgba(255,71,87,.1);}
+.session-log{margin-top:20px;background:var(--bg);border-radius:12px;padding:14px;}
+.sl-title{font-size:10px;font-family:var(--mono);color:var(--text3);letter-spacing:.08em;
+text-transform:uppercase;margin-bottom:10px;}
+.sl-item{display:flex;justify-content:space-between;align-items:center;padding:6px 0;
+border-bottom:1px solid var(--border);font-size:12px;color:var(--text2);}
+.sl-item:last-child{border-bottom:none;}
+.sl-item span:last-child{font-family:var(--mono);color:var(--text3);}
+
+/* DPP */
+.dpp-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;
+padding:14px 16px;margin-bottom:8px;position:relative;transition:all .2s;}
+.dpp-card:hover{border-color:var(--border2);}
+.dpp-top{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.dpp-title{font-size:13px;font-weight:500;color:var(--text);flex:1;}
+.dpp-stats{display:flex;gap:14px;font-size:11px;color:var(--text2);font-family:var(--mono);}
+.dpp-acc{font-weight:700;}
+.acc-bar{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-top:8px;}
+.acc-fill{height:100%;border-radius:2px;transition:width .4s;}
+
+/* MODULE */
+.mod-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;
+padding:14px 16px;margin-bottom:8px;position:relative;transition:all .2s;}
+.mod-card:hover{border-color:var(--border2);}
+.mod-top{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.mod-title{font-size:13px;font-weight:500;color:var(--text);flex:1;}
+.mod-pct{font-family:var(--mono);font-size:12px;font-weight:700;}
+.steps{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px;}
+.step{padding:4px 10px;border-radius:99px;border:1px solid var(--border2);font-size:10px;
+cursor:pointer;background:transparent;color:var(--text3);transition:all .15s;font-family:var(--sans);}
+.step:hover{border-color:var(--border3);color:var(--text2);}
+.step.done{background:rgba(0,212,170,.1);color:var(--accent3);border-color:rgba(0,212,170,.25);}
+
+/* ERRORS */
+.err-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;
+padding:14px 16px;margin-bottom:8px;position:relative;}
+.err-type{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-family:var(--mono);
+padding:2px 7px;border-radius:4px;margin-bottom:6px;}
+.err-topic{font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px;}
+.err-reason{font-size:11px;color:var(--text2);line-height:1.5;}
+.err-meta{font-size:9px;color:var(--text3);font-family:var(--mono);margin-top:6px;}
+
+/* INPUTS */
+.inp{width:100%;padding:11px 14px;background:var(--bg);border:1px solid var(--border2);
+border-radius:10px;font-size:13px;color:var(--text);font-family:var(--sans);
+outline:none;transition:all .2s;}
+.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,.08);}
+.inp::placeholder{color:var(--text3);}
+textarea.inp{resize:none;}
+.sel{padding:10px 12px;background:var(--bg);border:1px solid var(--border2);
+border-radius:10px;font-size:12px;color:var(--text);font-family:var(--sans);outline:none;}
+.sel:focus{border-color:var(--accent);}
+.add-btn{padding:11px 18px;background:var(--accent);border:none;border-radius:10px;
+font-size:13px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--sans);
+transition:all .2s;white-space:nowrap;}
+.add-btn:hover{background:#7c74ff;box-shadow:0 4px 16px rgba(108,99,255,.3);}
+.del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;
+padding:4px 8px;border-radius:6px;transition:all .15s;position:absolute;top:10px;right:10px;}
+.del-btn:hover{color:var(--red);background:rgba(255,71,87,.1);}
+.irow{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.empty{text-align:center;padding:32px;font-size:13px;color:var(--text3);}
+
+/* PROGRESS PAGE */
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:20px;}
+.day-cell{background:var(--bg);border:1px solid var(--border);border-radius:10px;
+padding:10px 4px;text-align:center;transition:all .2s;}
+.day-cell:hover{border-color:var(--border2);}
+.day-cell.today{border-color:var(--accent);background:rgba(108,99,255,.05);}
+.day-cell.today .ds{color:var(--accent);}
+.dn{font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;margin-bottom:4px;}
+.ds{font-family:var(--display);font-size:18px;font-weight:700;}
+.dl{font-size:8px;color:var(--text3);font-family:var(--mono);margin-top:3px;}
+.subj-bar{display:flex;align-items:center;gap:10px;padding:10px 0;
+border-bottom:1px solid var(--border);}
+.subj-bar:last-child{border-bottom:none;}
+.sb-name{font-size:13px;color:var(--text);width:100px;}
+.sb-track{flex:1;}
+.sb-pct{font-family:var(--mono);font-size:12px;font-weight:700;width:40px;text-align:right;}
+.sb-count{font-size:10px;color:var(--text3);width:55px;text-align:right;font-family:var(--mono);}
+
+/* AI TUTOR */
+.chat-area{height:300px;overflow-y:auto;margin-bottom:14px;display:flex;flex-direction:column;gap:10px;}
+.msg{padding:12px 16px;border-radius:14px;font-size:13px;line-height:1.6;max-width:85%;}
+.msg.ai{background:var(--bg3);border:1px solid var(--border);color:var(--text);align-self:flex-start;}
+.msg.user{background:rgba(108,99,255,.15);border:1px solid rgba(108,99,255,.2);
+color:var(--text);align-self:flex-end;}
+.ai-label{font-size:9px;font-family:var(--mono);color:var(--accent);
+letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;}
+.typing-indicator{display:none;align-self:flex-start;padding:10px 14px;
+background:var(--bg3);border:1px solid var(--border);border-radius:12px;}
+.typing-dot{width:6px;height:6px;background:var(--text3);border-radius:50%;
+display:inline-block;margin:0 2px;animation:typingPulse 1.2s ease-in-out infinite;}
+.typing-dot:nth-child(2){animation-delay:.2s;}
+.typing-dot:nth-child(3){animation-delay:.4s;}
+@keyframes typingPulse{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-4px);}}
+.chat-input-row{display:flex;gap:8px;}
+.chat-inp{flex:1;padding:12px 16px;background:var(--bg);border:1px solid var(--border2);
+border-radius:12px;font-size:13px;color:var(--text);font-family:var(--sans);outline:none;}
+.chat-inp:focus{border-color:var(--accent);}
+.chat-inp::placeholder{color:var(--text3);}
+.chat-btn{padding:12px 18px;background:var(--accent);border:none;border-radius:12px;
+color:#fff;cursor:pointer;font-size:16px;transition:all .2s;}
+.chat-btn:hover{background:#7c74ff;}
+.quick-prompts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.qp{padding:5px 12px;border-radius:99px;border:1px solid var(--border2);font-size:11px;
+cursor:pointer;background:transparent;color:var(--text3);transition:all .15s;font-family:var(--sans);}
+.qp:hover{border-color:var(--accent);color:var(--accent);}
+
+/* FORMULA BANK */
+.formula-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;}
+.formula-item{background:var(--bg);border:1px solid var(--border);border-radius:12px;
+padding:14px 16px;transition:all .2s;}
+.formula-item:hover{border-color:var(--border2);transform:translateY(-1px);}
+.fi-subj{font-size:9px;font-family:var(--mono);letter-spacing:.05em;margin-bottom:6px;text-transform:uppercase;}
+.fi-formula{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.fi-name{font-size:11px;color:var(--text2);}
+
+/* SUNDAY BANNER */
+.sun-banner{background:linear-gradient(135deg,rgba(245,166,35,.08),rgba(255,107,157,.08));
+border:1px solid rgba(245,166,35,.2);border-radius:16px;padding:16px 20px;margin-bottom:16px;display:none;}
+.sb-headline{font-family:var(--display);font-size:16px;font-weight:700;color:var(--gold);margin-bottom:4px;}
+.sb-sub{font-size:12px;color:rgba(245,166,35,.7);}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--border2);
+border-radius:12px;padding:12px 18px;font-size:13px;color:var(--text);z-index:999;
+display:none;animation:slideUp .3s ease;max-width:280px;box-shadow:0 8px 32px rgba(0,0,0,.5);}
+@keyframes slideUp{from{transform:translateY(10px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+
+/* RESPONSIVE */
+@media(max-width:640px){
+  .sidebar{position:fixed;height:100%;z-index:50;}
+  .main{margin-left:64px;}
+  .page{padding:20px 16px;}
+  .stat-grid{grid-template-columns:repeat(2,1fr);}
+  .exam-cards{flex-direction:column;align-items:center;}
+  .exam-card{width:100%;max-width:320px;}
+}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:900px){.two-col{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="grid-overlay"></div>
+
+<!-- ═══ ONBOARDING ═══ -->
+<div class="screen" id="screen-onboard">
+  <div class="ob-logo">StudyOS Pro</div>
+  <div class="ob-headline">Built for students<br>who want <span>everything.</span></div>
+  <div class="ob-sub">Track your study, crush your exams, and outpace everyone around you.</div>
+  <div class="ob-step" id="ob-step-label">— STEP 1 OF 3 — CREATE ACCOUNT —</div>
+  <div class="ob-form" id="ob-form-register">
+    <div class="ob-err" id="ob-err"></div>
+    <input class="ob-inp" id="ob-name" placeholder="Your name" autocomplete="off">
+    <input class="ob-inp" id="ob-pass" type="password" placeholder="Create a password" autocomplete="off">
+    <button class="ob-btn" onclick="doRegister()">Continue →</button>
+    <div class="ob-switch">Already have an account? <span onclick="showLogin()">Sign in</span></div>
+  </div>
+  <div class="ob-form" id="ob-form-login" style="display:none">
+    <div class="ob-err" id="ob-err2"></div>
+    <input class="ob-inp" id="ob-lname" placeholder="Your name" autocomplete="off">
+    <input class="ob-inp" id="ob-lpass" type="password" placeholder="Password" autocomplete="off">
+    <button class="ob-btn" onclick="doLogin()">Sign in →</button>
+    <div class="ob-switch">New here? <span onclick="showRegister()">Create account</span></div>
+  </div>
+</div>
+
+<!-- ═══ EXAM SELECT ═══ -->
+<div class="screen hidden" id="screen-exam">
+  <div class="ex-back" onclick="goBack()">← Back</div>
+  <div class="ob-step">— STEP 2 OF 3 — SELECT YOUR TARGET —</div>
+  <div class="ex-headline">What are you<br>preparing for?</div>
+  <div class="ex-sub">Your entire dashboard will be customized based on this.</div>
+  <div class="exam-cards">
+    <div class="exam-card jee" onclick="selectExam('JEE','jee','⚡')">
+      <span class="ec-icon">⚡</span>
+      <div class="ec-name">JEE Main + Advanced</div>
+      <div class="ec-desc">Physics, Chemistry, Mathematics<br>For IIT / NIT aspirants</div>
+      <span class="ec-tag">PCM · 3 subjects</span>
+    </div>
+    <div class="exam-card neet" onclick="selectExam('NEET','neet','🧬')">
+      <span class="ec-icon">🧬</span>
+      <div class="ec-name">NEET UG</div>
+      <div class="ec-desc">Physics, Chemistry, Biology<br>For MBBS / BDS aspirants</div>
+      <span class="ec-tag">PCB · 3 subjects</span>
+    </div>
+    <div class="exam-card boards" onclick="selectExam('Boards','boards','📋')">
+      <span class="ec-icon">📋</span>
+      <div class="ec-name">Class 12 Boards</div>
+      <div class="ec-desc">All streams — Science, Commerce<br>CBSE / State Board</div>
+      <span class="ec-tag">CBSE · All streams</span>
+    </div>
+    <div class="exam-card other" onclick="selectExam('Other','other','🎯')">
+      <span class="ec-icon">🎯</span>
+      <div class="ec-name">Other Exams</div>
+      <div class="ec-desc">CUET, CA, UPSC, SSC, Banking<br>Or custom preparation</div>
+      <span class="ec-tag">Custom · Flexible</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MAIN APP ═══ -->
+<div class="screen hidden" id="screen-app">
+  <div class="sidebar" id="sidebar">
+    <div class="sb-logo"><div class="icon">S</div><div class="wordmark">StudyOS Pro</div></div>
+    <div class="sb-user-wrap">
+      <div class="sb-user" id="sb-av" onclick="toggleSidebar()">V</div>
+      <div class="sb-user-info">
+        <div class="sb-uname" id="sb-uname">Vansh</div>
+        <span class="sb-exam-badge" id="sb-badge">JEE</span>
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Main</div>
+      <div class="nav-item active" onclick="showPage('dashboard',this)"><div class="ni-icon">⚡</div><div class="ni-label">Dashboard</div></div>
+      <div class="nav-item" onclick="showPage('checklist',this)"><div class="ni-icon">✅</div><div class="ni-label">Daily Routine</div><span class="streak-chip" id="streak-nav">🔥0</span></div>
+      <div class="nav-item" onclick="showPage('timer',this)"><div class="ni-icon">⏱</div><div class="ni-label">Focus Timer</div></div>
+      <div class="nav-item" onclick="showPage('dpp',this)"><div class="ni-icon">📝</div><div class="ni-label">DPP Tracker</div></div>
+      <div class="nav-item" onclick="showPage('module',this)"><div class="ni-icon">📚</div><div class="ni-label">Module Tracker</div></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Tools</div>
+      <div class="nav-item" onclick="showPage('errors',this)"><div class="ni-icon">❌</div><div class="ni-label">Error Notebook</div></div>
+      <div class="nav-item" onclick="showPage('formulas',this)"><div class="ni-icon">🧮</div><div class="ni-label">Formula Bank</div></div>
+      <div class="nav-item" onclick="showPage('ai',this)"><div class="ni-icon">🤖</div><div class="ni-label">AI Tutor</div></div>
+      <div class="nav-item" onclick="showPage('progress',this)"><div class="ni-icon">📊</div><div class="ni-label">Progress</div></div>
+    </div>
+    <div class="sb-toggle" onclick="toggleSidebar()">
+      <div class="ni-icon">⇄</div>
+      <div class="ni-label">Collapse</div>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="topbar">
+        <div>
+          <div class="page-title" id="dash-greet">Good morning ⚡</div>
+          <div style="font-size:12px;color:var(--text3);font-family:var(--mono);margin-top:2px;" id="dash-date"></div>
+        </div>
+        <div class="topbar-right">
+          <div class="tb-chip">🔥 <span id="streak-top">0</span> day streak</div>
+          <div class="tb-chip" id="dash-exam-chip">JEE</div>
+        </div>
+      </div>
+      <div class="sun-banner" id="sun-banner">
+        <div class="sb-headline">☀️ Sunday Special Mode</div>
+        <div class="sb-sub">Full mock test + module solve + chapter revision. You know the drill.</div>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="sc-glow" style="background:var(--accent)"></div>
+          <div class="sc-label">Today's checklist</div>
+          <div class="sc-val" id="d-today" style="color:var(--accent)">0%</div>
+          <div class="sc-sub" id="d-today-sub">0 tasks done</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-glow" style="background:var(--accent3)"></div>
+          <div class="sc-label">DPP accuracy</div>
+          <div class="sc-val" id="d-acc" style="color:var(--accent3)">—</div>
+          <div class="sc-sub" id="d-acc-sub">No DPPs yet</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-glow" style="background:var(--gold)"></div>
+          <div class="sc-label">Chapters tracked</div>
+          <div class="sc-val" id="d-mods" style="color:var(--gold)">0</div>
+          <div class="sc-sub" id="d-mods-sub">Add your first chapter</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-glow" style="background:var(--accent2)"></div>
+          <div class="sc-label">Errors logged</div>
+          <div class="sc-val" id="d-errs" style="color:var(--accent2)">0</div>
+          <div class="sc-sub">Total mistakes noted</div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-head"><div class="card-title">Today's progress</div></div>
+          <div class="prog-header"><span class="prog-lbl" id="dp-lbl">0 of 15 done</span><span class="prog-pct" id="dp-pct">0%</span></div>
+          <div class="prog-bar"><div class="prog-fill" id="dp-bar" style="width:0%;background:var(--accent)"></div></div>
+          <div style="margin-top:16px;">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">This week</div>
+            <div id="mini-week"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Quick Ask AI</div></div>
+          <div style="display:flex;gap:8px;margin-bottom:8px;">
+            <input class="inp" id="quick-q" placeholder="Any doubt — Maths, Physics, Chemistry..." style="flex:1;font-size:12px;">
+            <button class="add-btn" onclick="quickAsk()" style="padding:11px 14px;font-size:13px;">→</button>
+          </div>
+          <div id="quick-typing" style="font-size:11px;color:var(--text3);display:none;font-family:var(--mono);">Thinking...</div>
+          <div id="quick-ans" style="display:none;font-size:12px;color:var(--text);line-height:1.7;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:8px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHECKLIST -->
+    <div class="page" id="page-checklist">
+      <div class="topbar">
+        <div class="page-title">Daily Routine ✅</div>
+        <button onclick="resetDay()" style="padding:8px 14px;background:transparent;border:1px solid var(--border2);border-radius:8px;font-size:12px;color:var(--text3);cursor:pointer;font-family:var(--sans);">Reset day</button>
+      </div>
+      <div class="sun-banner" id="sun-banner2">
+        <div class="sb-headline">☀️ Sunday Special Mode</div>
+        <div class="sb-sub">Mock test + Module solve + Chapter revision. Go all in.</div>
+      </div>
+      <div class="card">
+        <div class="prog-header"><span class="prog-lbl" id="cp-lbl">0 of 15 done</span><span class="prog-pct" id="cp-pct">0%</span></div>
+        <div class="prog-bar"><div class="prog-fill" id="cp-bar" style="width:0%;background:var(--accent)"></div></div>
+        <div id="checklist-items"></div>
+      </div>
+    </div>
+
+    <!-- TIMER -->
+    <div class="page" id="page-timer">
+      <div class="topbar"><div class="page-title">Focus Timer ⏱</div></div>
+      <div class="two-col">
+        <div class="card timer-wrap-card" id="timer-card">
+          <div class="subj-tabs" id="subj-tabs"></div>
+          <div class="timer-display" id="t-disp">25:00</div>
+          <div class="timer-subject" id="t-sub">Select subject · Ready to focus</div>
+          <div class="timer-btns">
+            <button class="tbtn" onclick="setM(25)">25 min</button>
+            <button class="tbtn" onclick="setM(45)">45 min</button>
+            <button class="tbtn" onclick="setM(90)">90 min</button>
+            <button class="tbtn primary" id="start-btn" onclick="togTimer()">▶ Start</button>
+            <button class="tbtn danger" onclick="rstTimer()">Reset</button>
+          </div>
+          <div class="session-log">
+            <div class="sl-title">Today's sessions</div>
+            <div id="t-log"><div class="empty" style="padding:12px;font-size:12px;">No sessions yet. Start focusing!</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Study Stats</div></div>
+          <div style="display:flex;flex-direction:column;gap:12px;" id="timer-stats">
+            <div style="font-size:13px;color:var(--text3);">Start a session to see stats</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DPP -->
+    <div class="page" id="page-dpp">
+      <div class="topbar"><div class="page-title">DPP Tracker 📝</div></div>
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-head"><div class="card-title">Log today's DPP</div></div>
+        <input class="inp" id="dpp-topic" placeholder="Topic (e.g. Integration — definite integrals)" style="margin-bottom:10px;">
+        <div class="irow">
+          <select class="sel" id="dpp-subj"></select>
+          <input class="sel inp" id="dpp-tot" type="number" placeholder="Total Qs" style="width:90px;">
+          <input class="sel inp" id="dpp-cor" type="number" placeholder="✅ Correct" style="width:90px;">
+          <input class="sel inp" id="dpp-wr" type="number" placeholder="❌ Wrong" style="width:90px;">
+          <button class="add-btn" onclick="addDPP()">Log DPP</button>
+        </div>
+      </div>
+      <div id="dpp-list"></div>
+    </div>
+
+    <!-- MODULE -->
+    <div class="page" id="page-module">
+      <div class="topbar"><div class="page-title">Module Tracker 📚</div></div>
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-head"><div class="card-title">Add chapter</div></div>
+        <div class="irow">
+          <input class="inp" id="mod-n" placeholder="Chapter name (e.g. Integration, Organic — Aldehydes)" style="flex:1;margin-bottom:0;">
+          <select class="sel" id="mod-s"></select>
+          <button class="add-btn" onclick="addMod()">+ Add</button>
+        </div>
+      </div>
+      <div id="mod-list"></div>
+    </div>
+
+    <!-- ERRORS -->
+    <div class="page" id="page-errors">
+      <div class="topbar"><div class="page-title">Error Notebook ❌</div></div>
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-head"><div class="card-title">Log a mistake</div></div>
+        <input class="inp" id="e-topic" placeholder="Topic / concept (e.g. Integration by parts — sign error)" style="margin-bottom:10px;">
+        <textarea class="inp" id="e-reason" placeholder="What went wrong? Why? Be specific." rows="2" style="margin-bottom:10px;"></textarea>
+        <div class="irow">
+          <select class="sel" id="e-subj"></select>
+          <select class="sel" id="e-type">
+            <option>Concept gap</option><option>Formula error</option>
+            <option>Calculation</option><option>Careless</option><option>Time pressure</option>
+          </select>
+          <button class="add-btn" onclick="addErr()">Log Error</button>
+        </div>
+      </div>
+      <div id="err-list"></div>
+    </div>
+
+    <!-- FORMULA BANK -->
+    <div class="page" id="page-formulas">
+      <div class="topbar">
+        <div class="page-title">Formula Bank 🧮</div>
+        <select class="sel" id="formula-filter" onchange="renderFormulas()">
+          <option value="all">All subjects</option>
+        </select>
+      </div>
+      <div class="formula-grid" id="formula-grid"></div>
+    </div>
+
+    <!-- AI TUTOR -->
+    <div class="page" id="page-ai">
+      <div class="topbar"><div class="page-title">AI Tutor 🤖</div></div>
+      <div class="card">
+        <div class="quick-prompts" id="ai-quick-prompts"></div>
+        <div class="chat-area" id="chat-area">
+          <div class="msg ai"><div class="ai-label">StudyOS AI</div>Namaste! I'm your personal exam tutor. Ask me anything — concepts, numericals, shortcuts, theory. I'll give you the clearest answer. 💪</div>
+        </div>
+        <div class="typing-indicator" id="chat-typing">
+          <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
+        </div>
+        <div class="chat-input-row">
+          <input class="chat-inp" id="chat-inp" placeholder="Ask your doubt..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}">
+          <button class="chat-btn" onclick="sendMsg()">↑</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="page" id="page-progress">
+      <div class="topbar"><div class="page-title">Progress 📊</div></div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="sc-glow" style="background:var(--gold)"></div><div class="sc-label">Day streak</div><div class="sc-val" id="pr-streak" style="color:var(--gold)">0</div><div class="sc-sub">🔥 Keep going</div></div>
+        <div class="stat-card"><div class="sc-glow" style="background:var(--accent)"></div><div class="sc-label">Study time</div><div class="sc-val" id="pr-hours" style="color:var(--accent)">0h</div><div class="sc-sub">This week</div></div>
+        <div class="stat-card"><div class="sc-glow" style="background:var(--accent3)"></div><div class="sc-label">DPPs logged</div><div class="sc-val" id="pr-dpp" style="color:var(--accent3)">0</div><div class="sc-sub">Total</div></div>
+        <div class="stat-card"><div class="sc-glow" style="background:var(--accent2)"></div><div class="sc-label">Avg accuracy</div><div class="sc-val" id="pr-acc" style="color:var(--accent2)">—</div><div class="sc-sub">Across all DPPs</div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">This week</div></div>
+        <div class="week-grid" id="w-grid"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">Subject accuracy</div></div>
+        <div id="subj-acc"></div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════
+var EXAM_CONFIG = {
+  JEE: {
+    color:'var(--jee)', cls:'jee', emoji:'⚡',
+    subjects:['Physics','Chemistry','Maths'],
+    subjectColors:{'Physics':'var(--blue)','Chemistry':'var(--accent3)','Maths':'var(--jee)'},
+    quickPrompts:['Integration tricks JEE','Organic mechanism','Vectors 3D shortcut','Electrochemistry','Work-energy theorem','Coordination compounds'],
+    checks:[
+      {id:'c0',time:'4:00',label:'4:00–4:30 — Exercise (push-ups, squats, plank)',badge:'bx',bl:'Exercise',sec:'💪 Early morning'},
+      {id:'c1',time:'4:30',label:'4:30–5:00 — Formula notebook + 3 problems',badge:'bj',bl:'PCM',sec:''},
+      {id:'c2',time:'5:00',label:'5:00–6:00 — Chemistry deep study / NCERT',badge:'bj',bl:'Chemistry',sec:''},
+      {id:'c3',time:'6:00',label:'6:00 — Doodh laya + breakfast',badge:'',bl:'',sec:'🥛 6 AM'},
+      {id:'c4',time:'6:15',label:'6:15–6:45 — NCERT reading (any subject)',badge:'bb',bl:'NCERT',sec:''},
+      {id:'c5',time:'7–1:30',label:'School — seriously attend, note doubts',badge:'',bl:'',sec:'🏫 School'},
+      {id:'c6',time:'2:00',label:'2:00–3:30 — Self study (weakest subject first)',badge:'bj',bl:'Self study',sec:'☀️ Afternoon'},
+      {id:'c7',time:'3:30',label:'3:30–4:30 — DPP solve (log it in DPP tab)',badge:'bj',bl:'DPP',sec:''},
+      {id:'c8',time:'5:00',label:'5:00–6:30 — Prarambh Lecture 1 (live)',badge:'bg2c',bl:'L1 LIVE',sec:'📺 Lectures'},
+      {id:'c9',time:'6:30',label:'6:30–7:00 — L1 turant practice (8 questions)',badge:'bg2c',bl:'Practice',sec:''},
+      {id:'c10',time:'7:00',label:'7:00–7:45 — Physics self study',badge:'bb',bl:'Physics',sec:'🌙 Night'},
+      {id:'c11',time:'8:00',label:'8:00–9:30 — Prarambh Lecture 2 (live)',badge:'bg2c',bl:'L2 LIVE',sec:''},
+      {id:'c12',time:'9:30',label:'9:30–9:50 — L2 quick practice (5 questions)',badge:'bg2c',bl:'Practice',sec:''},
+      {id:'c13',time:'9:50',label:'9:50 — Error notebook update + tomorrow\'s 3 priorities',badge:'',bl:'',sec:''},
+      {id:'c14',time:'10:15',label:'10:15 PM — Phone down, sleep. Non-negotiable.',badge:'',bl:'',sec:''},
+    ],
+    sunChecks:[
+      {id:'s0',time:'4:00',label:'4:00–4:30 — Exercise',badge:'bx',bl:'Exercise',sec:'💪 Sunday'},
+      {id:'s1',time:'4:30',label:'4:30–5:00 — Formula notebook revision (all 3 subjects)',badge:'bj',bl:'Revision',sec:''},
+      {id:'s2',time:'6:00',label:'6:00 — Doodh laya',badge:'',bl:'',sec:'🥛 Morning'},
+      {id:'s3',time:'6:30',label:'6:30–8:00 — NCERT chapter revision (this week\'s topics)',badge:'bb',bl:'NCERT',sec:'📋 Revision'},
+      {id:'s4',time:'8:00',label:'8:00–8:30 — Module concept questions solve',badge:'bg2c',bl:'Module',sec:''},
+      {id:'s5',time:'9:00',label:'9:00–12:00 — Full mock test (3 hr, timed, phone off)',badge:'bj',bl:'MOCK',sec:'📝 Mock test'},
+      {id:'s6',time:'12:00',label:'12:00–1:00 — Analyse every wrong answer',badge:'bx',bl:'Analysis',sec:''},
+      {id:'s7',time:'2:00',label:'2:00–4:00 — Module weak chapter solve',badge:'bg2c',bl:'Module',sec:'📚 Afternoon'},
+      {id:'s8',time:'4:00',label:'4:00–5:00 — This week\'s DPP errors redo',badge:'bj',bl:'DPP',sec:''},
+      {id:'s9',time:'5:00',label:'5:00–7:00 — Full rest. No guilt.',badge:'',bl:'Rest',sec:'🌙 Recharge'},
+      {id:'s10',time:'9:00',label:'Write next week\'s plan (3 priorities per subject)',badge:'',bl:'',sec:''},
+    ],
+    formulas:[
+      {subj:'Physics',formula:'v = u + at',name:'1st equation of motion'},
+      {subj:'Physics',formula:'s = ut + ½at²',name:'2nd equation of motion'},
+      {subj:'Physics',formula:'v² = u² + 2as',name:'3rd equation of motion'},
+      {subj:'Physics',formula:'F = ma',name:"Newton's 2nd law"},
+      {subj:'Physics',formula:'W = Fs·cosθ',name:'Work done'},
+      {subj:'Physics',formula:'KE = ½mv²',name:'Kinetic energy'},
+      {subj:'Physics',formula:'PE = mgh',name:'Gravitational PE'},
+      {subj:'Physics',formula:'P = W/t = Fv',name:'Power'},
+      {subj:'Physics',formula:'τ = r × F',name:'Torque'},
+      {subj:'Physics',formula:'L = Iω',name:'Angular momentum'},
+      {subj:'Chemistry',formula:'PV = nRT',name:'Ideal gas law'},
+      {subj:'Chemistry',formula:'ΔG = ΔH - TΔS',name:"Gibbs free energy"},
+      {subj:'Chemistry',formula:'pH = -log[H⁺]',name:'pH definition'},
+      {subj:'Chemistry',formula:'Ka × Kb = Kw',name:'Acid-base constant relation'},
+      {subj:'Chemistry',formula:'E = E° - (RT/nF)lnQ',name:'Nernst equation'},
+      {subj:'Chemistry',formula:'t½ = 0.693/k',name:'First order half life'},
+      {subj:'Chemistry',formula:'ΔT_b = K_b · m',name:'Elevation of boiling point'},
+      {subj:'Chemistry',formula:'ΔT_f = K_f · m',name:'Depression of freezing point'},
+      {subj:'Maths',formula:'∫xⁿ dx = xⁿ⁺¹/(n+1) + C',name:'Power rule integration'},
+      {subj:'Maths',formula:'d/dx(sin x) = cos x',name:'Derivative of sin'},
+      {subj:'Maths',formula:'sin²x + cos²x = 1',name:'Pythagorean identity'},
+      {subj:'Maths',formula:'sin(A+B) = sinA·cosB + cosA·sinB',name:'Sum formula sin'},
+      {subj:'Maths',formula:'cos(A+B) = cosA·cosB - sinA·sinB',name:'Sum formula cos'},
+      {subj:'Maths',formula:'sin 2A = 2 sinA cosA',name:'Double angle sin'},
+      {subj:'Maths',formula:'Bayes: P(A|B) = P(B|A)P(A)/P(B)',name:"Bayes' theorem"},
+    ]
+  },
+  NEET: {
+    color:'var(--neet)', cls:'neet', emoji:'🧬',
+    subjects:['Physics','Chemistry','Biology'],
+    subjectColors:{'Physics':'var(--blue)','Chemistry':'var(--accent3)','Biology':'var(--accent2)'},
+    quickPrompts:['Cell division mechanisms','Genetics problems','Photosynthesis pathway','Nervous system','Equilibrium numericals','DNA replication'],
+    checks:[
+      {id:'c0',time:'5:00',label:'5:00–5:30 — Exercise + fresh start',badge:'bx',bl:'Exercise',sec:'🌅 Morning'},
+      {id:'c1',time:'5:30',label:'5:30–6:30 — Biology NCERT (1 chapter thoroughly)',badge:'bn',bl:'Biology',sec:''},
+      {id:'c2',time:'6:30',label:'6:30–7:00 — Biology diagrams practice',badge:'bn',bl:'Diagrams',sec:''},
+      {id:'c3',time:'7–1:30',label:'School — seriously attend, note doubts',badge:'',bl:'',sec:'🏫 School'},
+      {id:'c4',time:'2:00',label:'2:00–3:30 — Chemistry self study (Physical + Organic)',badge:'bn',bl:'Chemistry',sec:'☀️ Afternoon'},
+      {id:'c5',time:'3:30',label:'3:30–4:30 — DPP solve (Biology MCQs, 20 questions)',badge:'bg2c',bl:'DPP',sec:''},
+      {id:'c6',time:'5:00',label:'5:00–6:30 — Live lecture 1 (attend + notes)',badge:'bg2c',bl:'Lecture',sec:'📺 Evening'},
+      {id:'c7',time:'6:30',label:'6:30–7:00 — Lecture quick revision',badge:'bg2c',bl:'Revision',sec:''},
+      {id:'c8',time:'7:00',label:'7:00–7:45 — Physics formulas + numericals',badge:'bb',bl:'Physics',sec:'🌙 Night'},
+      {id:'c9',time:'8:00',label:'8:00–9:30 — Live lecture 2 (attend)',badge:'bg2c',bl:'Lecture',sec:''},
+      {id:'c10',time:'9:30',label:'9:30–9:50 — Error notebook update',badge:'',bl:'',sec:''},
+      {id:'c11',time:'10:00',label:'10:00 PM — Sleep (7 hours is memory consolidation)',badge:'',bl:'',sec:''},
+    ],
+    sunChecks:[
+      {id:'s0',time:'5:00',label:'5:00–5:30 — Exercise',badge:'bx',bl:'Exercise',sec:'☀️ Sunday'},
+      {id:'s1',time:'5:30',label:'5:30–8:00 — Weak topic NCERT deep revision',badge:'bn',bl:'NCERT',sec:''},
+      {id:'s2',time:'9:00',label:'9:00–12:00 — Full NEET mock (180 questions, 3 hrs)',badge:'bg2c',bl:'MOCK',sec:'📝 Mock'},
+      {id:'s3',time:'12:00',label:'12:00–1:30 — Error analysis (subject-wise)',badge:'bx',bl:'Analysis',sec:''},
+      {id:'s4',time:'2:30',label:'2:30–4:30 — Biology diagrams + past year MCQs',badge:'bn',bl:'Biology',sec:'📚 Afternoon'},
+      {id:'s5',time:'4:30',label:'4:30–6:00 — Chemistry + Physics weak chapters',badge:'bg2c',bl:'Revision',sec:''},
+      {id:'s6',time:'6:00',label:'6:00 onwards — Rest, family, recharge',badge:'',bl:'Rest',sec:'🌙 Rest'},
+    ],
+    formulas:[
+      {subj:'Biology',formula:'Mitosis: PMAT (Prophase-Metaphase-Anaphase-Telophase)',name:'Cell division stages'},
+      {subj:'Biology',formula:'DNA → mRNA → Protein (Central Dogma)',name:'Central dogma of biology'},
+      {subj:'Biology',formula:'Photosynthesis: 6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂',name:'Photosynthesis equation'},
+      {subj:'Biology',formula:'Respiration: C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + ATP',name:'Cellular respiration'},
+      {subj:'Biology',formula:'Genotype ratio F2: 1:2:1 (monohybrid)',name:"Mendel's law"},
+      {subj:'Chemistry',formula:'PV = nRT',name:'Ideal gas law'},
+      {subj:'Chemistry',formula:'pH = -log[H⁺]',name:'pH formula'},
+      {subj:'Chemistry',formula:'ΔG = ΔH - TΔS',name:'Gibbs energy'},
+      {subj:'Chemistry',formula:'t½ = 0.693/k (1st order)',name:'Half life'},
+      {subj:'Physics',formula:'v = u + at',name:'1st equation of motion'},
+      {subj:'Physics',formula:'F = ma',name:"Newton's 2nd law"},
+      {subj:'Physics',formula:'E = mc²',name:'Mass-energy equivalence'},
+    ]
+  },
+  Boards: {
+    color:'var(--gold)', cls:'boards', emoji:'📋',
+    subjects:['Physics','Chemistry','Maths'],
+    subjectColors:{'Physics':'var(--blue)','Chemistry':'var(--accent3)','Maths':'var(--gold)'},
+    quickPrompts:['NCERT important questions','Derivations to memorize','Board exam tips','Short answers Chem','Maths integration','Value based questions'],
+    checks:[
+      {id:'c0',time:'6:00',label:'6:00–6:30 — Morning revision (yesterday\'s chapter)',badge:'bg2c',bl:'Revision',sec:'🌅 Morning'},
+      {id:'c1',time:'6:30',label:'6:30–7:00 — NCERT exercise questions (1 chapter)',badge:'bg2c',bl:'NCERT',sec:''},
+      {id:'c2',time:'7–1:30',label:'School — attend seriously, make short notes',badge:'',bl:'',sec:'🏫 School'},
+      {id:'c3',time:'2:00',label:'2:00–4:00 — New chapter study (NCERT first)',badge:'bg2c',bl:'Study',sec:'☀️ Afternoon'},
+      {id:'c4',time:'4:00',label:'4:00–4:45 — Practice questions from textbook',badge:'bg2c',bl:'Practice',sec:''},
+      {id:'c5',time:'5:00',label:'5:00–6:30 — Live lecture (attend + notes)',badge:'bg2c',bl:'Lecture',sec:'📺 Lecture'},
+      {id:'c6',time:'6:30',label:'6:30–7:30 — Homework + lecture revision',badge:'',bl:'',sec:''},
+      {id:'c7',time:'8:00',label:'8:00–9:00 — Weak subject self study',badge:'bg2c',bl:'Weak',sec:'🌙 Night'},
+      {id:'c8',time:'9:00',label:'9:00–9:30 — Error notebook + tomorrow\'s plan',badge:'',bl:'',sec:''},
+      {id:'c9',time:'10:00',label:'10:00 PM — Sleep',badge:'',bl:'',sec:''},
+    ],
+    sunChecks:[
+      {id:'s0',time:'7:00',label:'7:00–8:00 — Revision (this week\'s chapters)',badge:'bg2c',bl:'Revision',sec:'☀️ Sunday'},
+      {id:'s1',time:'9:00',label:'9:00–12:00 — Full board paper practice (timed)',badge:'bg2c',bl:'Practice paper',sec:'📝 Paper'},
+      {id:'s2',time:'12:00',label:'12:00–1:00 — Mark checking + error analysis',badge:'bx',bl:'Analysis',sec:''},
+      {id:'s3',time:'2:00',label:'2:00–4:00 — Difficult questions reattempt',badge:'bg2c',bl:'Redo',sec:'📚 Afternoon'},
+      {id:'s4',time:'4:00',label:'4:00 onwards — Rest, next week prep',badge:'',bl:'Rest',sec:'🌙 Rest'},
+    ],
+    formulas:[
+      {subj:'Physics',formula:'v = u + at  |  s = ut + ½at²  |  v² = u² + 2as',name:'Equations of motion'},
+      {subj:'Physics',formula:'F = ma  |  F = Gm₁m₂/r²',name:"Newton's laws & Gravitation"},
+      {subj:'Chemistry',formula:'PV = nRT',name:'Ideal gas law'},
+      {subj:'Chemistry',formula:'ΔT_b = K_b·m  |  ΔT_f = K_f·m',name:'Colligative properties'},
+      {subj:'Maths',formula:'∫xⁿ dx = xⁿ⁺¹/(n+1)  |  d/dx(xⁿ) = nxⁿ⁻¹',name:'Calculus basics'},
+    ]
+  },
+  Other: {
+    color:'var(--blue)', cls:'other', emoji:'🎯',
+    subjects:['Subject 1','Subject 2','Subject 3'],
+    subjectColors:{'Subject 1':'var(--blue)','Subject 2':'var(--accent3)','Subject 3':'var(--gold)'},
+    quickPrompts:['Study strategy tips','Memory techniques','How to concentrate','Time management','Exam anxiety help','Note-making methods'],
+    checks:[
+      {id:'c0',time:'6:00',label:'Morning warm-up — 30 min light study',badge:'bb',bl:'Morning',sec:'🌅 Morning'},
+      {id:'c1',time:'6:30',label:'Core study session 1 — 2 hours deep work',badge:'bb',bl:'Core',sec:''},
+      {id:'c2',time:'9:00',label:'Short break — 15 min (no phone)',badge:'',bl:'',sec:''},
+      {id:'c3',time:'9:15',label:'Core study session 2 — 1.5 hours',badge:'bb',bl:'Core',sec:''},
+      {id:'c4',time:'2:00',label:'Afternoon revision session',badge:'bb',bl:'Revision',sec:'☀️ Afternoon'},
+      {id:'c5',time:'4:00',label:'Practice questions / problems',badge:'bg2c',bl:'Practice',sec:''},
+      {id:'c6',time:'5:00',label:'Lecture / video content (if any)',badge:'bg2c',bl:'Lecture',sec:'📺 Lecture'},
+      {id:'c7',time:'8:00',label:'Evening study — weak areas',badge:'bb',bl:'Weak',sec:'🌙 Evening'},
+      {id:'c8',time:'9:30',label:'Error log + next day plan',badge:'',bl:'',sec:''},
+      {id:'c9',time:'10:00',label:'Sleep — 7 hours minimum',badge:'',bl:'',sec:''},
+    ],
+    sunChecks:[
+      {id:'s0',time:'9:00',label:'Mock test or full practice set (timed)',badge:'bg2c',bl:'Mock',sec:'☀️ Sunday'},
+      {id:'s1',time:'12:00',label:'Analysis — every mistake matters',badge:'bx',bl:'Analysis',sec:''},
+      {id:'s2',time:'2:00',label:'Weak topic deep dive',badge:'bb',bl:'Study',sec:'📚 Afternoon'},
+      {id:'s3',time:'5:00',label:'Rest — you deserve it',badge:'',bl:'Rest',sec:'🌙 Rest'},
+    ],
+    formulas:[]
+  }
+};
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+var ST = {checks:{},errors:[],sessions:[],dpps:[],modules:[],streak:0,lastDate:null,weekData:{}};
+var now = new Date();
+var isSun = now.getDay()===0;
+var tk = now.toISOString().split('T')[0];
+var DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var curUser = null;
+var curExam = null;
+var cfg = null;
+var TOTAL = 0;
+
+function save(){if(curUser)localStorage.setItem('sos_data_'+curUser,JSON.stringify(ST));}
+function load(u){try{var d=localStorage.getItem('sos_data_'+u);if(d)ST=JSON.parse(d);}catch(e){}}
+
+function getUsers(){try{return JSON.parse(localStorage.getItem('sos_users')||'{}');}catch(e){return {};}}
+function saveUsers(u){localStorage.setItem('sos_users',JSON.stringify(u));}
+
+// Pre-register Vansh
+(function(){var u=getUsers();if(!u['vansh'])u['vansh']={name:'Vansh',pass:'iitbombay',exam:'JEE',display:'Vansh Shukla'};saveUsers(u);})();
+
+// Auto-login
+(function(){var s=localStorage.getItem('sos_session');if(s){var u=getUsers();if(u[s]){curUser=s;load(s);startApp(u[s]);}}})();
+
+// ═══ AUTH ═══
+function doRegister(){
+  var name=document.getElementById('ob-name').value.trim();
+  var pass=document.getElementById('ob-pass').value.trim();
+  if(!name||!pass){showObErr('Name and password required!');return;}
+  var users=getUsers();
+  if(users[name.toLowerCase()]){showObErr('Name already taken. Try another!');return;}
+  var key=name.toLowerCase();
+  users[key]={name:key,pass:pass,display:name,exam:null};
+  saveUsers(users);curUser=key;localStorage.setItem('sos_session',key);
+  goToExam();
+}
+function doLogin(){
+  var name=document.getElementById('ob-lname').value.trim().toLowerCase();
+  var pass=document.getElementById('ob-lpass').value.trim();
+  var users=getUsers();
+  if(!users[name]){showObErr2('Account not found!');return;}
+  if(users[name].pass!==pass){showObErr2('Wrong password!');return;}
+  curUser=name;localStorage.setItem('sos_session',name);load(name);
+  if(!users[name].exam){goToExam();}
+  else{startApp(users[name]);}
+}
+function showObErr(m){var e=document.getElementById('ob-err');e.textContent=m;e.style.display='block';setTimeout(()=>e.style.display='none',3000);}
+function showObErr2(m){var e=document.getElementById('ob-err2');e.textContent=m;e.style.display='block';setTimeout(()=>e.style.display='none',3000);}
+function showLogin(){document.getElementById('ob-form-register').style.display='none';document.getElementById('ob-form-login').style.display='block';document.getElementById('ob-step-label').textContent='— SIGN IN —';}
+function showRegister(){document.getElementById('ob-form-login').style.display='none';document.getElementById('ob-form-register').style.display='block';document.getElementById('ob-step-label').textContent='— STEP 1 OF 3 — CREATE ACCOUNT —';}
+function goToExam(){switchScreen('screen-exam');}
+function goBack(){switchScreen('screen-onboard');}
+
+function selectExam(exam,cls,emoji){
+  var users=getUsers();
+  users[curUser].exam=exam;
+  users[curUser].emoji=emoji;
+  saveUsers(users);
+  startApp(users[curUser]);
+}
+
+function startApp(userObj){
+  curExam=userObj.exam||'JEE';
+  cfg=EXAM_CONFIG[curExam]||EXAM_CONFIG.JEE;
+  TOTAL=isSun?cfg.sunChecks.length:cfg.checks.length;
+  switchScreen('screen-app');
+  initApp(userObj);
+}
+
+function initApp(userObj){
+  var display=userObj.display||userObj.name||'Student';
+  var h=now.getHours();
+  var g=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  document.getElementById('dash-greet').textContent=g+' '+display+' '+cfg.emoji;
+  document.getElementById('dash-date').textContent=now.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  var uname=display.charAt(0).toUpperCase();
+  document.getElementById('sb-av').textContent=uname;
+  document.getElementById('sb-av').style.background='linear-gradient(135deg,'+cfg.color+',var(--accent2))';
+  document.getElementById('sb-uname').textContent=display;
+  var badge=document.getElementById('sb-badge');
+  badge.textContent=curExam;
+  badge.style.background='rgba(108,99,255,.15)';badge.style.color=cfg.color;
+  document.getElementById('dash-exam-chip').textContent=curExam;
+  if(isSun){document.getElementById('sun-banner').style.display='block';document.getElementById('sun-banner2').style.display='block';}
+  buildChecklist();restoreChecks();upProg();upStreak();
+  buildSubjectTabs();buildSubjSelects();
+  rdpp();rmod();rerr();rlog();rwk();updateDash();
+  buildFormulas();buildQuickPrompts();
+}
+
+// ═══ SCREEN TRANSITIONS ═══
+function switchScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+
+// ═══ SIDEBAR ═══
+var sidebarOpen=false;
+function toggleSidebar(){sidebarOpen=!sidebarOpen;document.getElementById('sidebar').classList.toggle('expanded',sidebarOpen);}
+
+// ═══ PAGE NAV ═══
+function showPage(p,nav){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  if(nav)nav.classList.add('active');
+  if(p==='progress')rwk();
+}
+
+// ═══ CHECKLIST ═══
+function buildChecklist(){
+  var checks=isSun?cfg.sunChecks:cfg.checks;
+  var el=document.getElementById('checklist-items');
+  var html='';var lastSec='';
+  checks.forEach(c=>{
+    if(c.sec&&c.sec!==lastSec){html+=`<div class="check-section">${c.sec}</div>`;lastSec=c.sec;}
+    html+=`<div class="ci" onclick="tc(this)" data-id="${c.id}">
+      <div class="cb"></div>
+      <div style="flex:1"><div class="cl">${c.label}</div>${c.badge?`<div><span class="badge ${c.badge}">${c.bl}</span></div>`:''}</div>
+      <span class="ct">${c.time}</span>
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+function restoreChecks(){
+  Object.keys(ST.checks||{}).forEach(id=>{
+    if(!ST.checks[id])return;
+    var el=document.querySelector('[data-id="'+id+'"]');if(!el)return;
+    el.querySelector('.cb').classList.add('done');
+    el.querySelector('.cb').innerHTML=chkSVG();
+    el.querySelector('.cl').classList.add('done');
+  });
+}
+function chkSVG(){return '<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';}
+function tc(el){
+  var id=el.dataset.id;
+  ST.checks[id]=!ST.checks[id];
+  var box=el.querySelector('.cb'),lbl=el.querySelector('.cl');
+  if(ST.checks[id]){box.classList.add('done');box.innerHTML=chkSVG();lbl.classList.add('done');}
+  else{box.classList.remove('done');box.innerHTML='';lbl.classList.remove('done');}
+  if(!ST.weekData[tk])ST.weekData[tk]={checks:0,mins:0,dpps:0};
+  ST.weekData[tk].checks=Object.values(ST.checks).filter(Boolean).length;
+  save();upProg();upStreak();rwk();updateDash();
+}
+function upProg(){
+  var done=Object.values(ST.checks).filter(Boolean).length;
+  var pct=Math.round(done/TOTAL*100);
+  ['cp-bar','dp-bar'].forEach(id=>{var el=document.getElementById(id);if(el)el.style.width=pct+'%';});
+  var cl=document.getElementById('cp-lbl');if(cl)cl.textContent=done+' of '+TOTAL+' done';
+  var cp=document.getElementById('cp-pct');if(cp)cp.textContent=pct+'%';
+  var dl=document.getElementById('dp-lbl');if(dl)dl.textContent=done+' of '+TOTAL+' done';
+  var dp=document.getElementById('dp-pct');if(dp)dp.textContent=pct+'%';
+  var dt=document.getElementById('d-today');if(dt)dt.textContent=pct+'%';
+  var ds=document.getElementById('d-today-sub');if(ds)ds.textContent=done+' tasks done';
+}
+function resetDay(){
+  if(!confirm('Reset today\'s checklist?'))return;
+  ST.checks={};save();
+  document.querySelectorAll('.cb').forEach(b=>{b.classList.remove('done');b.innerHTML='';});
+  document.querySelectorAll('.cl').forEach(l=>l.classList.remove('done'));
+  upProg();updateDash();
+}
+function upStreak(){
+  var done=Object.values(ST.checks).filter(Boolean).length;
+  if(ST.lastDate!==tk&&done===TOTAL){
+    var y=new Date(now);y.setDate(now.getDate()-1);
+    var yk=y.toISOString().split('T')[0];
+    ST.streak=(ST.lastDate===yk)?(ST.streak||0)+1:1;
+    ST.lastDate=tk;save();
+  }
+  var s=ST.streak||0;
+  var sn=document.getElementById('streak-nav');if(sn)sn.textContent='🔥'+s;
+  var st=document.getElementById('streak-top');if(st)st.textContent=s;
+  var ps=document.getElementById('pr-streak');if(ps)ps.textContent=s;
+}
+
+// ═══ TIMER ═══
+var tInt=null,tSecs=25*60,tRun=false,curSubj='',sStart=null;
+var sessionSubjClass='act-jee';
+function buildSubjectTabs(){
+  var el=document.getElementById('subj-tabs');
+  if(!el||!cfg)return;
+  var defaultSubj=cfg.subjects[0]||'';
+  curSubj=defaultSubj;
+  el.innerHTML=cfg.subjects.map((s,i)=>`<button class="stab${i===0?' '+getSubjActClass(s):''}" onclick="setSj(this,'${s}')">${s}</button>`).join('');
+  document.getElementById('t-sub').textContent=defaultSubj+' · Ready to focus';
+}
+function getSubjActClass(s){
+  if(curExam==='NEET'&&s==='Biology')return 'act-neet';
+  if(s==='Chemistry')return 'act-neet';
+  if(s==='Physics')return 'act-g';
+  return 'act-jee';
+}
+function setSj(btn,name){
+  document.querySelectorAll('.stab').forEach(b=>{b.className='stab';});
+  var cls=getSubjActClass(name);
+  btn.className='stab '+cls;
+  curSubj=name;
+  document.getElementById('t-sub').textContent=name+' · Ready to focus';
+}
+function pad(n){return n<10?'0'+n:''+n;}
+function dspT(){var m=Math.floor(tSecs/60),s=tSecs%60;document.getElementById('t-disp').textContent=pad(m)+':'+pad(s);}
+function setM(m){if(tRun)return;tSecs=m*60;dspT();}
+function togTimer(){
+  if(tRun){
+    clearInterval(tInt);tRun=false;
+    document.getElementById('start-btn').textContent='▶ Start';
+    document.getElementById('timer-card').classList.remove('timer-running');
+    if(sStart){
+      var mins=Math.round((Date.now()-sStart)/60000);
+      if(mins>0){
+        ST.sessions.push({subj:curSubj,mins,time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})});
+        if(!ST.weekData[tk])ST.weekData[tk]={checks:0,mins:0,dpps:0};
+        ST.weekData[tk].mins=(ST.weekData[tk].mins||0)+mins;
+        save();rlog();rwk();updateDash();showToast(curSubj+' session: '+mins+' min done ✅');
+      }
+    }
+  }else{
+    if(!curSubj){showToast('Select a subject first!');return;}
+    sStart=Date.now();tRun=true;
+    document.getElementById('start-btn').textContent='⏹ Stop';
+    document.getElementById('timer-card').classList.add('timer-running');
+    document.getElementById('t-sub').textContent=curSubj+' · Focus mode ON 🔥';
+    tInt=setInterval(()=>{
+      if(tSecs>0){tSecs--;dspT();}
+      else{clearInterval(tInt);tRun=false;document.getElementById('start-btn').textContent='▶ Start';document.getElementById('timer-card').classList.remove('timer-running');showToast(curSubj+' session done! Take a break. ✅');}
+    },1000);
+  }
+}
+function rstTimer(){clearInterval(tInt);tRun=false;tSecs=25*60;dspT();document.getElementById('start-btn').textContent='▶ Start';document.getElementById('timer-card').classList.remove('timer-running');}
+function rlog(){
+  var el=document.getElementById('t-log');
+  var s=(ST.sessions||[]).slice(-6).reverse();
+  if(!s.length){el.innerHTML='<div class="empty" style="padding:12px;font-size:12px;">No sessions yet</div>';return;}
+  el.innerHTML=s.map(x=>`<div class="sl-item"><span style="color:var(--text)">${x.subj}</span><span>${x.mins}m · ${x.time}</span></div>`).join('');
+  // Timer stats
+  var statsEl=document.getElementById('timer-stats');
+  if(statsEl){
+    var total=(ST.sessions||[]).reduce((a,b)=>a+b.mins,0);
+    var subjMap={};
+    (ST.sessions||[]).forEach(s=>{subjMap[s.subj]=(subjMap[s.subj]||0)+s.mins;});
+    var html=`<div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-family:var(--mono)">TOTAL TIME</div>
+    <div style="font-family:var(--display);font-size:28px;font-weight:700;color:var(--accent);margin-bottom:16px;">${Math.round(total/60*10)/10}h</div>`;
+    html+=`<div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-family:var(--mono)">BY SUBJECT</div>`;
+    Object.entries(subjMap).forEach(([s,m])=>{
+      var col=cfg.subjectColors[s]||'var(--accent)';
+      html+=`<div class="subj-bar"><div class="sb-name" style="font-size:12px;">${s}</div>
+      <div class="sb-track"><div class="prog-bar"><div class="prog-fill" style="width:${Math.min(100,Math.round(m/Math.max(...Object.values(subjMap))*100))}%;background:${col}"></div></div></div>
+      <div class="sb-pct" style="color:${col}">${Math.round(m/60*10)/10}h</div></div>`;
+    });
+    statsEl.innerHTML=html;
+  }
+}
+dspT();
+
+// ═══ SUBJECT SELECTS ═══
+function buildSubjSelects(){
+  if(!cfg)return;
+  ['dpp-subj','mod-s','e-subj','formula-filter'].forEach(id=>{
+    var el=document.getElementById(id);if(!el)return;
+    if(id==='formula-filter'){
+      el.innerHTML='<option value="all">All subjects</option>'+cfg.subjects.map(s=>`<option value="${s}">${s}</option>`).join('');
+    }else{
+      el.innerHTML=cfg.subjects.map(s=>`<option>${s}</option>`).join('');
+    }
+  });
+}
+
+// ═══ DPP ═══
+function addDPP(){
+  var topic=document.getElementById('dpp-topic').value.trim();
+  var subj=document.getElementById('dpp-subj').value;
+  var total=parseInt(document.getElementById('dpp-tot').value)||0;
+  var cor=parseInt(document.getElementById('dpp-cor').value)||0;
+  var wr=parseInt(document.getElementById('dpp-wr').value)||0;
+  if(!topic||!total){showToast('Fill topic and total questions!');return;}
+  var acc=Math.round(cor/total*100);
+  ST.dpps.unshift({topic,subj,total,cor,wr,acc,date:now.toLocaleDateString('en-IN',{day:'numeric',month:'short'})});
+  if(!ST.weekData[tk])ST.weekData[tk]={checks:0,mins:0,dpps:0};
+  ST.weekData[tk].dpps=(ST.weekData[tk].dpps||0)+1;
+  save();['dpp-topic','dpp-tot','dpp-cor','dpp-wr'].forEach(i=>document.getElementById(i).value='');
+  rdpp();rwk();updateDash();showToast('DPP logged! Accuracy: '+acc+'% 📝');
+}
+function delDPP(i){ST.dpps.splice(i,1);save();rdpp();updateDash();}
+function rdpp(){
+  var el=document.getElementById('dpp-list');
+  if(!el)return;
+  if(!ST.dpps.length){el.innerHTML='<div class="empty">No DPPs logged yet. Solve and log your first DPP! 📝</div>';return;}
+  el.innerHTML=ST.dpps.map((d,i)=>{
+    var col=d.acc>=80?'var(--accent3)':d.acc>=50?'var(--gold)':'var(--red)';
+    var sc=cfg.subjectColors[d.subj]||'var(--accent)';
+    return `<div class="dpp-card"><button class="del-btn" onclick="delDPP(${i})">✕</button>
+    <div class="dpp-top"><span class="badge" style="background:${sc}1a;color:${sc}">${d.subj}</span><span class="dpp-title">${d.topic}</span></div>
+    <div class="dpp-stats"><span>✅ ${d.cor}</span><span>❌ ${d.wr}</span><span class="dpp-acc" style="color:${col}">${d.acc}%</span><span style="margin-left:auto;color:var(--text3)">${d.date}</span></div>
+    <div class="acc-bar"><div class="acc-fill" style="width:${d.acc}%;background:${col}"></div></div></div>`;
+  }).join('');
+}
+
+// ═══ MODULE ═══
+var STEPS=['Concept read','NCERT done','Examples solved','DPP done','Revision done'];
+function addMod(){
+  var name=document.getElementById('mod-n').value.trim();
+  var subj=document.getElementById('mod-s').value;
+  if(!name){showToast('Enter chapter name!');return;}
+  ST.modules.unshift({name,subj,steps:[false,false,false,false,false]});
+  save();document.getElementById('mod-n').value='';rmod();updateDash();showToast('Chapter added: '+name+' 📚');
+}
+function togStep(mi,si){ST.modules[mi].steps[si]=!ST.modules[mi].steps[si];save();rmod();}
+function delMod(i){ST.modules.splice(i,1);save();rmod();updateDash();}
+function rmod(){
+  var el=document.getElementById('mod-list');if(!el)return;
+  if(!ST.modules.length){el.innerHTML='<div class="empty">No chapters added. Add your first chapter! 📚</div>';return;}
+  el.innerHTML=ST.modules.map((m,mi)=>{
+    var done=m.steps.filter(Boolean).length;
+    var pct=Math.round(done/5*100);
+    var col=pct===100?'var(--accent3)':pct>=60?'var(--gold)':'var(--accent)';
+    var sc=cfg.subjectColors[m.subj]||'var(--accent)';
+    var tag=pct===100?`<span style="font-size:9px;background:rgba(0,212,170,.1);color:var(--accent3);padding:2px 7px;border-radius:4px;font-family:var(--mono);">DONE ✓</span>`:'';
+    return `<div class="mod-card"><button class="del-btn" onclick="delMod(${mi})">✕</button>
+    <div class="mod-top"><span class="badge" style="background:${sc}1a;color:${sc}">${m.subj}</span><span class="mod-title">${m.name}</span>${tag}<span class="mod-pct" style="color:${col}">${pct}%</span></div>
+    <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${col}"></div></div>
+    <div class="steps">${STEPS.map((s,si)=>`<button class="step${m.steps[si]?' done':''}" onclick="togStep(${mi},${si})">${s}</button>`).join('')}</div></div>`;
+  }).join('');
+}
+
+// ═══ ERRORS ═══
+function addErr(){
+  var topic=document.getElementById('e-topic').value.trim();
+  var reason=document.getElementById('e-reason').value.trim();
+  var subj=document.getElementById('e-subj').value;
+  var type=document.getElementById('e-type').value;
+  if(!topic){showToast('Add the topic!');return;}
+  ST.errors.unshift({topic,reason,subj,type,date:now.toLocaleDateString('en-IN',{day:'numeric',month:'short'})});
+  save();document.getElementById('e-topic').value='';document.getElementById('e-reason').value='';
+  rerr();updateDash();showToast('Error logged! Analyse it, don\'t repeat it 💪');
+}
+function delErr(i){ST.errors.splice(i,1);save();rerr();updateDash();}
+function rerr(){
+  var el=document.getElementById('err-list');if(!el)return;
+  if(!ST.errors.length){el.innerHTML='<div class="empty">No errors logged. Every mistake logged = future marks saved. 📝</div>';return;}
+  var typeColors={'Concept gap':'var(--accent)','Formula error':'var(--red)','Calculation':'var(--gold)','Careless':'var(--accent2)','Time pressure':'var(--blue)'};
+  el.innerHTML=ST.errors.map((e,i)=>{
+    var sc=cfg.subjectColors[e.subj]||'var(--accent)';
+    var tc=typeColors[e.type]||'var(--text2)';
+    return `<div class="err-card"><button class="del-btn" onclick="delErr(${i})">✕</button>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
+      <span class="badge" style="background:${sc}1a;color:${sc}">${e.subj}</span>
+      <span class="err-type" style="background:${tc}1a;color:${tc}">${e.type}</span>
+    </div>
+    <div class="err-topic">${e.topic}</div>
+    ${e.reason?`<div class="err-reason">${e.reason}</div>`:''}
+    <div class="err-meta">${e.date}</div></div>`;
+  }).join('');
+}
+
+// ═══ FORMULA BANK ═══
+function buildFormulas(){
+  if(!cfg||!cfg.formulas)return;
+  renderFormulas();
+}
+function renderFormulas(){
+  var el=document.getElementById('formula-grid');if(!el)return;
+  var filter=document.getElementById('formula-filter');
+  var sel=filter?filter.value:'all';
+  var items=cfg.formulas.filter(f=>sel==='all'||f.subj===sel);
+  if(!items.length){el.innerHTML='<div class="empty">No formulas for this subject yet.</div>';return;}
+  el.innerHTML=items.map(f=>{
+    var sc=cfg.subjectColors[f.subj]||'var(--accent)';
+    return `<div class="formula-item">
+      <div class="fi-subj" style="color:${sc}">${f.subj}</div>
+      <div class="fi-formula">${f.formula}</div>
+      <div class="fi-name">${f.name}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══ AI TUTOR ═══
+function buildQuickPrompts(){
+  if(!cfg)return;
+  var el=document.getElementById('ai-quick-prompts');if(!el)return;
+  el.innerHTML=cfg.quickPrompts.map(p=>`<button class="qp" onclick="askQuick('${p}')">${p}</button>`).join('');
+}
+function askQuick(q){document.getElementById('chat-inp').value=q;sendMsg();}
+async function sendMsg(){
+  var inp=document.getElementById('chat-inp');
+  var msg=inp.value.trim();if(!msg)return;
+  inp.value='';
+  var area=document.getElementById('chat-area');
+  area.innerHTML+=`<div class="msg user">${msg}</div>`;
+  area.scrollTop=area.scrollHeight;
+  document.getElementById('chat-typing').style.display='flex';
+  try{
+    var resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system:`You are StudyOS AI, a world-class tutor for ${curExam} exam preparation. 
+        Be direct, clear, and encouraging. Answer in a mix of Hindi and English (Hinglish) — casual but accurate.
+        Use short paragraphs. Give examples. Focus on exam-relevant content.
+        Subjects: ${cfg&&cfg.subjects?cfg.subjects.join(', '):'all'}.
+        If it's a numerical, solve it step by step. If it's a concept, explain with an analogy.`,
+        messages:[{role:'user',content:msg}]
+      })
+    });
+    var data=await resp.json();
+    var ans=data.content&&data.content[0]?data.content[0].text:'Network issue. Try again!';
+    document.getElementById('chat-typing').style.display='none';
+    area.innerHTML+=`<div class="msg ai"><div class="ai-label">StudyOS AI</div>${ans.replace(/\n/g,'<br>')}</div>`;
+    area.scrollTop=area.scrollHeight;
+  }catch(e){
+    document.getElementById('chat-typing').style.display='none';
+    area.innerHTML+=`<div class="msg ai"><div class="ai-label">StudyOS AI</div>Couldn't reach the server. Check your internet!</div>`;
+  }
+}
+async function quickAsk(){
+  var q=document.getElementById('quick-q').value.trim();if(!q)return;
+  document.getElementById('quick-typing').style.display='block';
+  document.getElementById('quick-ans').style.display='none';
+  try{
+    var resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:400,
+        system:`Tutor for ${curExam}. Answer in 2-3 lines max. Hinglish. Direct.`,
+        messages:[{role:'user',content:q}]
+      })
+    });
+    var data=await resp.json();
+    var ans=data.content&&data.content[0]?data.content[0].text:'Try again!';
+    document.getElementById('quick-typing').style.display='none';
+    var qa=document.getElementById('quick-ans');qa.style.display='block';qa.innerHTML=ans.replace(/\n/g,'<br>');
+  }catch(e){document.getElementById('quick-typing').style.display='none';}
+}
+
+// ═══ WEEKLY ═══
+function rwk(){
+  var wg=document.getElementById('w-grid');
+  var start=new Date(now);start.setDate(now.getDate()-now.getDay());
+  var html='';var totalM=0,totalD=0,totalDP=0;
+  for(var i=0;i<7;i++){
+    var d=new Date(start);d.setDate(start.getDate()+i);
+    var key=d.toISOString().split('T')[0];
+    var data=ST.weekData[key]||{checks:0,mins:0,dpps:0};
+    var tot=d.getDay()===0?cfg.sunChecks.length:cfg.checks.length;
+    var pct=Math.round((data.checks||0)/tot*100);
+    var isT=key===tk;
+    totalM+=(data.mins||0);if(data.checks>0)totalD++;totalDP+=(data.dpps||0);
+    var col=pct>=80?'var(--accent3)':pct>=50?'var(--gold)':'var(--text3)';
+    if(wg)html+=`<div class="day-cell${isT?' today':''}"><div class="dn">${DAYS[d.getDay()]}</div><div class="ds" style="color:${col}">${pct}%</div><div class="dl">${data.mins||0}m</div></div>`;
+  }
+  if(wg)wg.innerHTML=html;
+  var ph=document.getElementById('pr-hours');if(ph)ph.textContent=Math.round(totalM/60*10)/10+'h';
+  var pdp=document.getElementById('pr-dpp');if(pdp)pdp.textContent=totalDP;
+  // Subject accuracy
+  var sa=document.getElementById('subj-acc');if(!sa)return;
+  var subMap={};
+  (ST.dpps||[]).forEach(d=>{if(!subMap[d.subj])subMap[d.subj]=[];subMap[d.subj].push(d.acc);});
+  var avgAll=ST.dpps.length?Math.round(ST.dpps.reduce((a,b)=>a+b.acc,0)/ST.dpps.length):0;
+  var pa=document.getElementById('pr-acc');if(pa)pa.textContent=avgAll?avgAll+'%':'—';
+  var da=document.getElementById('d-acc');if(da)da.textContent=avgAll?avgAll+'%':'—';
+  var das=document.getElementById('d-acc-sub');if(das)das.textContent=avgAll?(ST.dpps.length+' DPPs averaged'):'No DPPs yet';
+  sa.innerHTML=cfg.subjects.map(s=>{
+    var arr=subMap[s]||[];
+    var avg=arr.length?Math.round(arr.reduce((a,b)=>a+b,0)/arr.length):0;
+    var col=cfg.subjectColors[s]||'var(--accent)';
+    return `<div class="subj-bar"><div class="sb-name">${s}</div>
+    <div class="sb-track"><div class="prog-bar"><div class="prog-fill" style="width:${avg}%;background:${col}"></div></div></div>
+    <div class="sb-pct" style="color:${col}">${avg?avg+'%':'—'}</div>
+    <div class="sb-count">${arr.length} DPPs</div></div>`;
+  }).join('');
+  // mini week for dashboard
+  var mw=document.getElementById('mini-week');
+  if(mw){
+    var s2=new Date(now);s2.setDate(now.getDate()-now.getDay());
+    var mhtml='<div style="display:flex;gap:6px;">';
+    for(var j=0;j<7;j++){
+      var dd=new Date(s2);dd.setDate(s2.getDate()+j);
+      var kk=dd.toISOString().split('T')[0];
+      var dd2=ST.weekData[kk]||{checks:0};
+      var tot2=dd.getDay()===0?cfg.sunChecks.length:cfg.checks.length;
+      var p2=Math.round((dd2.checks||0)/tot2*100);
+      var isT2=kk===tk;
+      var c2=p2>=80?'var(--accent3)':p2>=50?'var(--gold)':'var(--text3)';
+      mhtml+=`<div style="flex:1;text-align:center;background:var(--bg);border:1px solid ${isT2?'var(--accent)':'var(--border)'};border-radius:8px;padding:7px 2px;">
+        <div style="font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;margin-bottom:3px;">${DAYS[dd.getDay()]}</div>
+        <div style="font-family:var(--display);font-size:14px;font-weight:700;color:${c2}">${p2}%</div>
+      </div>`;
+    }
+    mhtml+='</div>';
+    mw.innerHTML=mhtml;
+  }
+}
+
+// ═══ DASHBOARD ═══
+function updateDash(){
+  var dm=document.getElementById('d-mods');if(dm)dm.textContent=ST.modules.length;
+  var dms=document.getElementById('d-mods-sub');if(dms)dms.textContent=ST.modules.length===0?'Add first chapter':ST.modules.filter(m=>m.steps.filter(Boolean).length===5).length+' complete';
+  var de=document.getElementById('d-errs');if(de)de.textContent=ST.errors.length;
+}
+
+// ═══ TOAST ═══
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.style.display='block';
+  clearTimeout(t._to);t._to=setTimeout(()=>t.style.display='none',3000);
+}
+
+// ═══ LOGOUT ═══
+function doLogout(){save();localStorage.removeItem('sos_session');location.reload();}
+</script>
+</body>
+</html>
